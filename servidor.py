@@ -13,7 +13,13 @@ def get_video_info():
         return jsonify({"error": "No se proporcionó una URL"}), 400
 
     try:
-        ydl_opts = {'quiet': True}
+        ydl_opts = {
+    'quiet': True,
+    'skip_download': True,  # Doble seguridad de que solo extraemos info
+    'ignoreerrors': True,   # Ignorar algunos errores no críticos
+    'no_check_certificate': True,
+    'youtube_include_dash_manifest': False, # A veces ayuda a evitar errores de autenticación
+}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=False)
         
@@ -43,3 +49,4 @@ def get_video_info():
         return jsonify(response_data)
     except Exception as e:
         return jsonify({"error": str(e), "success": False}), 500
+
