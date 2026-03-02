@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # <-- 1. IMPORTAMOS LA NUEVA LIBRERÍA
 import yt_dlp
 import os
 
-# --- Todo está en un solo archivo ahora ---
-
 app = Flask(__name__)
+CORS(app)  # <-- 2. APLICAMOS EL "PERMISO ESPECIAL" A TODA NUESTRA APP
 
 @app.route('/api/info')
 def get_video_info():
@@ -43,5 +43,3 @@ def get_video_info():
         return jsonify(response_data)
     except Exception as e:
         return jsonify({"error": str(e), "success": False}), 500
-
-# No necesitas el if __name__ == '__main__': para Render
