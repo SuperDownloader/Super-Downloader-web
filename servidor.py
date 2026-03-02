@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # <-- 1. IMPORTAMOS LA NUEVA LIBRERÍA
+from flask_cors import CORS
 import yt_dlp
 import os
 
 app = Flask(__name__)
-CORS(app)  # <-- 2. APLICAMOS EL "PERMISO ESPECIAL" A TODA NUESTRA APP
+CORS(app)
 
 @app.route('/api/info')
 def get_video_info():
@@ -14,15 +14,20 @@ def get_video_info():
 
     try:
         ydl_opts = {
-    'quiet': True,
-    'skip_download': True,  # Doble seguridad de que solo extraemos info
-    'ignoreerrors': True,   # Ignorar algunos errores no críticos
-    'no_check_certificate': True,
-    'youtube_include_dash_manifest': False, # A veces ayuda a evitar errores de autenticación
-}
+            'quiet': True,
+            'skip_download': True,
+            'ignoreerrors': True,
+            'no_check_certificate': True,
+            'youtube_include_dash_manifest': False,
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=False)
         
+        # --- ¡LA LÍNEA MÁGICA QUE LO ARREGLA TODO! ---
+        # Si 'info' está vacío (None), significa que yt-dlp falló silenciosamente.
+        if info is None:
+            return jsonify({"error": "No se pudo obtener información de este video. Puede que sea privado o tenga restricciones.", "success": False}), 500
+
         formats = info.get('formats', [])
         
         video_link = None
@@ -47,6 +52,6 @@ def get_video_info():
             }
         }
         return jsonify(response_data)
+        
     except Exception as e:
         return jsonify({"error": str(e), "success": False}), 500
-
